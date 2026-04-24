@@ -19,11 +19,8 @@ pipeline {
             steps {
                 script {
                     echo "Running SonarQube Analysis..."
-                    // In a real environment, you would use:
-                    // withSonarQubeEnv('SonarQubeServer') {
-                    //     sh 'sonar-scanner -Dsonar.projectKey=${SONAR_PROJECT_KEY}'
-                    // }
-                    sh 'echo "SonarQube Scan Complete"'
+                    // Integration with SonarQube Scanner
+                    sh 'sonar-scanner -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sources=. -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}'
                 }
             }
         }
@@ -31,7 +28,7 @@ pipeline {
         stage('Unit Testing') {
             steps {
                 sh 'pip install -r requirements.txt'
-                sh 'pytest tests/test_app.py --junitxml=test-reports/results.xml'
+                sh 'export PYTHONPATH=$PYTHONPATH:. && pytest tests/test_app.py --junitxml=test-reports/results.xml'
             }
         }
 
@@ -45,12 +42,12 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    // withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-                    //     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    //     sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
-                    //     sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest"
-                    // }
-                    sh 'echo "Simulating Docker Push..."'
+                    // Requires docker-hub-credentials to be configured in Jenkins
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                        sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+                        sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest"
+                    }
                 }
             }
         }
@@ -59,9 +56,8 @@ pipeline {
             steps {
                 script {
                     echo "Deploying to Kubernetes using Rolling Update Strategy..."
-                    // sh "kubectl apply -f k8s/deployment.yaml"
-                    // sh "kubectl rollout status deployment/aceest-fitness"
-                    sh 'echo "Deployment Successful"'
+                    sh "kubectl apply -f k8s/deployment.yaml"
+                    sh "kubectl rollout status deployment/aceest-fitness"
                 }
             }
         }
