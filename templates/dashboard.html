@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ACEest Fitness{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h2>Client Management</h2>
+    <div class="add-client-form">
+        <form action="{{ url_for('add_client') }}" method="post">
+            <input type="text" name="name" id="new_client_name" placeholder="New Client Name" required>
+            <button type="submit" id="add_client_btn">Add Client</button>
+        </form>
+    </div>
+</div>
+
+<div class="client-grid">
+    {% for client in clients %}
+    <div class="client-card">
+        <h3>{{ client.name }}</h3>
+        <p><strong>Program:</strong> {{ client.program or 'None' }}</p>
+        <p><strong>Membership:</strong> {{ client.membership_status }}</p>
+        <div class="card-actions">
+            <a href="{{ url_for('client_details', client_id=client.id) }}" class="btn secondary">View Details</a>
+            <a href="{{ url_for('generate_report', client_id=client.id) }}" class="btn outline">Report</a>
+        </div>
+    </div>
+    {% else %}
+    <p>No clients found. Add one above.</p>
+    {% endfor %}
+</div>
+{% endblock %}

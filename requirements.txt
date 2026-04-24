@@ -1,0 +1,6 @@
+flask
+fpdf
+pytest
+pytest-flask
+requests
+gunicorn

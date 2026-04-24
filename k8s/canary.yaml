@@ -1,0 +1,56 @@
+# Stable Deployment (90% traffic via replicas)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-fitness-stable
+spec:
+  replicas: 9
+  selector:
+    matchLabels:
+      app: aceest-fitness
+  template:
+    metadata:
+      labels:
+        app: aceest-fitness
+        version: stable
+    spec:
+      containers:
+      - name: aceest-fitness
+        image: monikachandra/aceest-fitness:stable
+        ports:
+        - containerPort: 5000
+---
+# Canary Deployment (10% traffic via replicas)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-fitness-canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aceest-fitness
+  template:
+    metadata:
+      labels:
+        app: aceest-fitness
+        version: canary
+    spec:
+      containers:
+      - name: aceest-fitness
+        image: monikachandra/aceest-fitness:canary
+        ports:
+        - containerPort: 5000
+---
+# Service routing to both based on label 'app: aceest-fitness'
+apiVersion: v1
+kind: Service
+metadata:
+  name: aceest-fitness-canary-service
+spec:
+  selector:
+    app: aceest-fitness
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}{{ client.name }} - Details{% endblock %}
+
+{% block content %}
+<div class="client-detail-header">
+    <h2>Client Profile: {{ client.name }}</h2>
+    <div class="header-actions">
+        <a href="{{ url_for('generate_program', client_id=client.id) }}" class="btn primary">Generate AI Program</a>
+        <a href="{{ url_for('generate_report', client_id=client.id) }}" class="btn secondary">PDF Report</a>
+    </div>
+</div>
+
+<div class="client-info-grid">
+    <section class="card profile-info">
+        <h3>Basic Information</h3>
+        <ul>
+            <li><strong>Age:</strong> {{ client.age or '-' }}</li>
+            <li><strong>Height:</strong> {{ client.height or '-' }} cm</li>
+            <li><strong>Weight:</strong> {{ client.weight or '-' }} kg</li>
+            <li><strong>Program:</strong> {{ client.program or 'None' }}</li>
+            <li><strong>Calories:</strong> {{ client.calories or '-' }} kcal</li>
+        </ul>
+    </section>
+
+    <section class="card stats">
+        <h3>Analytics</h3>
+        <div class="chart-container">
+            <canvas id="adherenceChart"></canvas>
+        </div>
+    </section>
+</div>
+
+<div class="history-tables">
+    <section class="card">
+        <h3>Workout History</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Duration</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for workout in workouts %}
+                <tr>
+                    <td>{{ workout.date }}</td>
+                    <td>{{ workout.workout_type }}</td>
+                    <td>{{ workout.duration_min }} min</td>
+                    <td>{{ workout.notes }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">No workouts logged</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <section class="card">
+        <h3>Body Metrics</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Weight</th>
+                    <th>Waist</th>
+                    <th>Bodyfat</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for metric in metrics %}
+                <tr>
+                    <td>{{ metric.date }}</td>
+                    <td>{{ metric.weight }} kg</td>
+                    <td>{{ metric.waist }} cm</td>
+                    <td>{{ metric.bodyfat }} %</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">No metrics logged</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('adherenceChart').getContext('2d');
+    const data = {
+        labels: [{% for p in progress %}'{{ p.week }}',{% endfor %}],
+        datasets: [{
+            label: 'Weekly Adherence (%)',
+            data: [{% for p in progress %}{{ p.adherence }},{% endfor %}],
+            borderColor: '#d4af37',
+            backgroundColor: 'rgba(212, 175, 55, 0.2)',
+            fill: true,
+            tension: 0.4
+        }]
+    };
+    new Chart(ctx, {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, max: 100 }
+            }
+        }
+    });
+</script>
+{% endblock %}
