@@ -56,6 +56,23 @@ Explore strategies in the `k8s/` folder:
 - `ab-testing.yaml`: Split testing.
 - `shadow.yaml`: Mirror traffic for testing.
 
+### Minikube Deployment
+To quickly deploy and test this application locally using Minikube, you can use the provided deployment script.
+
+1. Ensure [Minikube](https://minikube.sigs.k8s.io/docs/start/) is installed and start it:
+   ```bash
+   minikube start
+   ```
+2. Run the deployment script (which builds the image directly inside Minikube and applies the manifests):
+   ```bash
+   ./deploy_minikube.sh
+   ```
+3. To access the `LoadBalancer` service in Minikube, run:
+   ```bash
+   minikube service aceest-fitness-service
+   ```
+   *(Alternatively, run `minikube tunnel` in a separate terminal and access the External-IP).*
+
 ## CI/CD Architecture
 The pipeline follows a standard DevOps lifecycle:
 1. **Source**: GitHub repo triggers Jenkins.
